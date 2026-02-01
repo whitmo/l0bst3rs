@@ -4,5 +4,5 @@ Project repository.
 
 ## Organization
 - `./docs`: Current resources
-- `./projects`: Current initiatives
-- `./archive`: Historical resources and initiatives
+- `./docs/projects`: Current initiatives
+- `./docs/archive`: Historical resources and initiatives
