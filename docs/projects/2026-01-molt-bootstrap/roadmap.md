@@ -1,53 +1,63 @@
 # Molt Bootstrap Roadmap
 
-**Goal:** Create a replicable, automated local setup for the Moltbot + Mattermost stack using shell scripts and containerization.
+**Goal:** Create a replicable, automated local setup for the Moltbot + Mattermost stack using `container-compose` and self-provisioning container images.
 
 ## Principles
-- **Simplicity:** Use shell scripts and standard container commands (Apple Container/Docker) initially.
-- **Configurability:** Allow users to customize ports, passwords, and tokens via a configuration file.
-- **Modularity:** Separate the setup, startup, and teardown processes.
+- **Declarative Infrastructure:** Use `container-compose.yml` to define services, networks, and volumes.
+- **Encapsulation:** Complexity belongs inside the container images (custom entrypoints), not in host-side shell scripts.
+- **Zero-Touch Provisioning:** The stack should come up fully configured (users, teams, bots) without manual UI interaction.
 
 ## Milestones
 
-### Milestone 1: Foundation & Directory Structure
-- [ ] Define the standard directory structure (`~/moltbot-stack` or similar, configurable).
-- [ ] Create a `setup.sh` script to:
-    - Verify prerequisites (Apple Container, `git`, etc.).
-    - Create necessary subdirectories for data persistence (`mattermost/data`, `postgres/data`, `moltbot/workspace`, etc.).
+### Milestone 1: Base Configuration & Structure
+- [ ] Define the project structure:
+    ```text
+    /
+    ├── compose.yml
+    ├── .env.example
+    ├── services/
+    │   ├── mattermost/
+    │   │   ├── Dockerfile (or Containerfile)
+    │   │   └── entrypoint.sh
+    │   └── moltbot/
+    │       ├── Dockerfile
+    │       └── entrypoint.sh
+    ```
+- [ ] Create `.env.example` for all configurable secrets and ports.
 
-### Milestone 2: Core Services Orchestration
-- [ ] Implement `start.sh` to launch services in order:
-    1.  PostgreSQL
-    2.  Mattermost (waiting for DB)
-    3.  Moltbot
-- [ ] Implement `stop.sh` to gracefully shut down services.
-- [ ] Ensure containers are named consistently for easy management.
-- [ ] Handle container networking (ensure containers can communicate, preferably via a dedicated bridge network rather than relying on manual IP inspection if possible with Apple Container, or automate the IP discovery).
+### Milestone 2: Service Orchestration (`container-compose`)
+- [ ] Create `compose.yml` to define:
+    - `postgres`: Standard database service.
+    - `mattermost`: Custom build (see M3).
+    - `moltbot`: Custom build (see M4).
+    - `ngrok`: Sidecar service (optional).
+- [ ] Define a shared bridge network so services can communicate by hostname (`mattermost`, `postgres`).
 
-### Milestone 3: Configuration Management
-- [ ] Create a `config.env.example` file containing:
-    - Postgres credentials
-    - Mattermost ports and settings
-    - Moltbot tokens
-    - ngrok configuration
-- [ ] Update scripts to source `config.env` if it exists.
-- [ ] Implement basic validation (warn if default passwords are used).
+### Milestone 3: Mattermost Automation (Encapsulated)
+- [ ] Create a custom Mattermost image:
+    - Install `mmctl`.
+    - Write a custom `entrypoint.sh`:
+        1. Wait for Postgres readiness.
+        2. Initialize Mattermost.
+        3. Run `mmctl` commands to create the admin user, team, and bot account.
+        4. Generate an invite code/link and print it to logs.
 
-### Milestone 4: Moltbot & Mattermost Integration
-- [ ] Automate `config.yaml` generation for Moltbot based on environment variables.
-- [ ] Research `mmctl` (Mattermost CLI) to potentially automate:
-    - Admin account creation.
-    - Bot account creation and token retrieval.
-- [ ] Provide clear instructions for any remaining manual steps (e.g., "Paste this token into `config.env`").
+### Milestone 4: Moltbot Automation (Encapsulated)
+- [ ] Create a custom Moltbot image:
+    - Write a custom `entrypoint.sh`:
+        1. Wait for Mattermost service readiness.
+        2. Generate `config.yaml` from environment variables (injecting the bot token).
+        3. Start Moltbot.
 
-### Milestone 5: External Access (ngrok)
-- [ ] Integrate `ngrok` startup into `start.sh` (optional, enabled via config).
-- [ ] Automate updating Mattermost `SiteURL` if ngrok URL changes (or document the static domain requirement).
+### Milestone 5: Developer Experience
+- [ ] Create a minimal `Makefile` or `Justfile` for common tasks:
+    - `make up`: Runs `container-compose up`.
+    - `make down`: Runs `container-compose down`.
+    - `make logs`: Tails logs.
 
-### Milestone 6: Security & Hardening (Future)
-- [ ] Add flags/options for security hardening (e.g., `start.sh --secure`).
-- [ ] Automate generation of strong random passwords for the initial setup.
+### Milestone 6: Security & Hardening
+- [ ] Ensure secrets are passed strictly via environment variables (not baked into images).
+- [ ] Review container privileges (run as non-root where possible).
 
-## Future Research (IaaC)
-- [ ] Evaluate `docker-compose` compatibility with Apple Container (if applicable) or alternative orchestration tools for a more declarative approach.
-- [ ] Consider Terraform or Ansible if complexity grows beyond shell scripts.
+## Future Research
+- [ ] Investigate "container-compose" specifics if different from standard Docker Compose.
