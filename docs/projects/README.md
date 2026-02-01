@@ -1,2 +1,3 @@
 # Projects
-Current initiatives and active work.
+
+Active initiatives and work-in-progress. Each project should have its own subdirectory.

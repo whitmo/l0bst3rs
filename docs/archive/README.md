@@ -1,2 +1,3 @@
 # Archive
-Historical resources and completed initiatives.
+
+Completed projects, historical resources, and inactive initiatives.
