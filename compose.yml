@@ -18,6 +18,12 @@ services:
       MM_SQLSETTINGS_DRIVERNAME: postgres
       MM_SQLSETTINGS_DATASOURCE: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
       MM_SERVICESETTINGS_SITEURL: ${MM_SERVICESETTINGS_SITEURL}
+      # Automation Env Vars
+      MM_ADMIN_USERNAME: ${MM_ADMIN_USERNAME}
+      MM_ADMIN_PASSWORD: ${MM_ADMIN_PASSWORD}
+      MM_ADMIN_EMAIL: ${MM_ADMIN_EMAIL}
+      MM_TEAM_NAME: ${MM_TEAM_NAME}
+      MM_TEAM_DISPLAY_NAME: ${MM_TEAM_DISPLAY_NAME}
     depends_on:
       - postgres
     volumes:
@@ -27,6 +33,7 @@ services:
       - mattermost_plugins:/mattermost/plugins
       - mattermost_client_plugins:/mattermost/client/plugins
       - mattermost_bleve_indexes:/mattermost/bleve-indexes
+      - bootstrap_data:/bootstrap
     networks:
       - moltbot-net
 
@@ -41,6 +48,7 @@ services:
     volumes:
       - moltbot_workspace:/workspace
       - moltbot_config:/root/.clawdbot
+      - bootstrap_data:/bootstrap
     networks:
       - moltbot-net
 
@@ -58,3 +66,4 @@ volumes:
   mattermost_bleve_indexes:
   moltbot_workspace:
   moltbot_config:
+  bootstrap_data:
