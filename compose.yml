@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - moltbot-net
+
+  mattermost:
+    build: ./services/mattermost
+    ports:
+      - "${MATTERMOST_PORT}:8065"
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
+      MM_SERVICESETTINGS_SITEURL: ${MM_SERVICESETTINGS_SITEURL}
+    depends_on:
+      - postgres
+    volumes:
+      - mattermost_config:/mattermost/config
+      - mattermost_data:/mattermost/data
+      - mattermost_logs:/mattermost/logs
+      - mattermost_plugins:/mattermost/plugins
+      - mattermost_client_plugins:/mattermost/client/plugins
+      - mattermost_bleve_indexes:/mattermost/bleve-indexes
+    networks:
+      - moltbot-net
+
+  moltbot:
+    build: ./services/moltbot
+    depends_on:
+      - mattermost
+    environment:
+      MATTERMOST_URL: "http://mattermost:8065"
+      MATTERMOST_BOT_TOKEN: ${MATTERMOST_BOT_TOKEN}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    volumes:
+      - moltbot_workspace:/workspace
+      - moltbot_config:/root/.clawdbot
+    networks:
+      - moltbot-net
+
+networks:
+  moltbot-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mattermost_config:
+  mattermost_data:
+  mattermost_logs:
+  mattermost_plugins:
+  mattermost_client_plugins:
+  mattermost_bleve_indexes:
+  moltbot_workspace:
+  moltbot_config:
