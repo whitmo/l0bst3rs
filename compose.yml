@@ -18,6 +18,8 @@ services:
       MM_SQLSETTINGS_DRIVERNAME: postgres
       MM_SQLSETTINGS_DATASOURCE: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
       MM_SERVICESETTINGS_SITEURL: ${MM_SERVICESETTINGS_SITEURL}
+      # Passed through for pg_isready in entrypoint
+      POSTGRES_USER: ${POSTGRES_USER}
       # Automation Env Vars
       MM_ADMIN_USERNAME: ${MM_ADMIN_USERNAME}
       MM_ADMIN_PASSWORD: ${MM_ADMIN_PASSWORD}
