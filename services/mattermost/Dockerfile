@@ -1,11 +1,15 @@
 FROM mattermost/mattermost-team-edition:latest
 
-# Install jq and curl for API interactions
 USER root
-RUN apt-get update && apt-get install -y jq curl && rm -rf /var/lib/apt/lists/*
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Install utilities for health checks and provisioning
+RUN apt-get update && apt-get install -y jq curl postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Create bootstrap directory (also mounted as a volume for sharing with moltbot)
+RUN mkdir -p /bootstrap && chown mattermost:mattermost /bootstrap
+
+COPY entrypoint.sh /custom-entrypoint.sh
+RUN chmod +x /custom-entrypoint.sh
 
 USER mattermost
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/custom-entrypoint.sh"]

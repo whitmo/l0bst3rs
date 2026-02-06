@@ -1,0 +1,27 @@
+# Moltbot Configuration (Auto-Generated)
+
+# Connect to Mattermost
+channels:
+  mattermost:
+    enabled: true
+    url: "${MATTERMOST_URL}"
+    token: "${MATTERMOST_BOT_TOKEN}"
+    username: "moltbot"
+    dm:
+      policy: "open" # For testing, open to everyone
+    groupPolicy: "open"
+
+# Agent settings
+agents:
+  defaults:
+    model: "claude-3-5-sonnet-20240620" # Default robust model
+    sandbox:
+      mode: "strict"
+    tools:
+      enabled:
+        - "web_search"
+        - "web_fetch"
+
+# API Keys
+keys:
+  anthropic: "${ANTHROPIC_API_KEY}"
